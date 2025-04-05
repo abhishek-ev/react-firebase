@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import db from '../firebaseConfig';
 import {
   collection,
@@ -10,6 +10,8 @@ import {
 } from "firebase/firestore";
 
 function Write() {
+  const [categpryName, setCategoryName] = useState("");
+  const [categoryList, setCategoryList] = useState([]);
   const [foodItem, setFoodItem] = useState({
     category: "",
     name: "", 
@@ -17,6 +19,13 @@ function Write() {
     image:""
   });
   const [items, setItems] = useState([]);  // List of items under the category
+
+
+
+  useEffect(() => {
+    loadCategoryList();
+    loadFoodItems();
+  }, []);
 
   const saveData = async () => {
 
@@ -30,19 +39,7 @@ function Write() {
 
     console.log("foodItem",foodItem)
 
-    // if (inputValue1 === "" || items.length === 0) {
-    //   alert("Please enter a category name and at least one item.");
-    //   return;
-    // }
-
-    await addDoc(collection(db, "menuItems"), foodItem);
-  };
-
-  const addItem = () => {
-    // if (inputValue2 !== "") {
-    //   setItems([...items, inputValue2]);  // Add new item to the list
-    //   setInputValue2("");  // Clear the input field for item name
-    // }
+    await addDoc(collection(db, "menuItems"), foodItem).then(loadFoodItems)
   };
 
   const handleFileChange = async (e) => {
@@ -50,6 +47,21 @@ function Write() {
     const base64 = await convertToBase64(file);
     setFoodItem({...foodItem, image:base64});
   }
+
+  const saveCategory = async () => {
+    await addDoc(collection(db, "categories"), {
+      name:categpryName 
+    }).then(()=>{
+      loadCategoryList()
+    })
+  };
+
+  const loadCategoryList  = async () => {
+    const querySnapshot = await getDocs(collection(db,"categories"));
+    const categoryList = querySnapshot.docs.map(doc => ({id:doc.id, ...doc.data()}));
+    console.log("categoryList",categoryList)
+    setCategoryList(categoryList)
+  };
 
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -60,17 +72,50 @@ function Write() {
     });
   };
 
+  const loadFoodItems = async ()=> {
+    const querySnapshot = await getDocs(collection(db, "menuItems"));
+    const foodItemList = querySnapshot.docs.map(doc => doc.data())
+    console.log("foodItemList",foodItemList)
+    setItems(foodItemList)
+  }
+
   return (
-    <form>
-      <label htmlFor="category">Category:</label>
+    <>
+    <form style={{border:"2px solid black",padding:"1rem"}}>
+      <label htmlFor="category">Create Category</label>
       <input
         type="text"
+        id="categoryName"
+        name="categoryName"
+        placeholder="Category"
+        value={categpryName}
+        onChange={(e) => setCategoryName(e.target.value )}
+      />
+      <br/>
+      <button type="button" onClick={saveCategory}>
+        Save Category
+      </button>
+    </form>
+    <br/><br/>
+      <ul>
+        {categoryList.map((category, index) => (
+          <li key={index}>{category.name}</li>
+        ))}
+      </ul>
+    <br/><br/>
+    <form style={{border:"2px solid black",padding:"1rem"}}>
+      <label htmlFor="category">Category:</label>
+      <select
         id="category"
         name="category"
-        placeholder="Category"
         value={foodItem.category}
         onChange={(e) => setFoodItem({ ...foodItem, category: e.target.value })}
-      />
+      >
+        <option value="">Select Category</option>
+        {categoryList.map(category => (
+          <option key={category.id} value={category.id}>{category.name}</option>
+        ))}
+      </select>
       <br/>
       <label htmlFor="foodName">Name:</label>
       <input
@@ -100,9 +145,23 @@ function Write() {
         accept=".png, .jpg, .jpeg"
         onChange={(e) => handleFileChange(e)}
       />
-      <br/>
+      <br/><br/>
       <button type="button" onClick={saveData}>Save Category and Items</button>
+      <br/><br/>
     </form>
+    <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)' }}>
+      {items.map((item,index) => (
+        <li key={index}>
+          <img src={item.image} alt={item.name} style={{width: '6rem',height:'6rem'}} />
+          <h2>{item.name}</h2>
+          <p>{item.description}</p>
+        </li>
+      ))}
+    </ul>
+
+
+    </>
+
   );
 }
 
