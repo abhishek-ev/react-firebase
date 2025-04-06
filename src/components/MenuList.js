@@ -205,7 +205,7 @@ function MenuList() {
               </div>
             </form>
           </div>
-          <ul className="list-group overflow-auto" style={{ height: "25rem" }}>
+          <ul className="list-group overflow-auto" style={{ maxHeight: "25rem" }}>
             {categoryList && categoryList.map((category) => (
               <li key={category.id} className="list-group-item d-flex justify-content-between">
                 {category.name}
@@ -335,7 +335,7 @@ function MenuList() {
       </div>
 
 
-    </div>
+    </div >
   )
 }
 
