@@ -1,6 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
 body {
   margin: 0;
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+  font-family: "Plus Jakarta Sans", sans-serif !important;
 }
 
+.w-max {
+  width: max-content !important;
+}
 
+.h-max {
+  height: max-content !important;
+}
+
+.background-container {
+  background-color: aliceblue;
+}
+
+.sidebar-container {
+  background-color: #EA0486;
+}
+
+.sidebar-icon {
+  color: #fff !important;
+}
+
+.sidebar-icon.active {
+  background-color: #940355 !important;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, 0.692);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.food-list-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .food-list-container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
