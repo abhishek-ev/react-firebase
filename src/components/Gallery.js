@@ -7,13 +7,14 @@ import { addDoc, collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import db from '../firebaseConfig'
 
 import Loader from './Loader'
+import NoData from './NoData'
 
 var $ = require('jquery');
 
 function Gallery() {
 
   const [loader, setLoader] = useState(true);
-  const [poster, setPoster] = useState({
+  const [video, setVideo] = useState({
     name: "",
     embeded: "",
     url: ""
@@ -27,16 +28,21 @@ function Gallery() {
   const saveData = async () => {
     setLoader(true)
 
-    setPoster({
-      name: poster.name,
-      url: poster.url
+    setVideo({
+      name: video.name,
+      url: video.url
     });
 
-    console.log("poster", poster)
+    console.log("video", video)
 
-    await addDoc(collection(db, "gallery"), poster).then(() => {
+    await addDoc(collection(db, "gallery"), video).then(() => {
       loadPosters()
       $('#staticBackdropBtn').click();
+      setVideo({
+        name: "",
+        embeded: "",
+        url: ""
+      })
       setLoader(false)
     })
   };
@@ -92,7 +98,7 @@ function Gallery() {
           </div>
           <hr />
 
-
+          {items && items.length === 0 && <NoData />}
           <ul className='food-list-container p-0 m-0'>
             {items && items.map((item, index) => (
               <li key={index} className="list-group-item p-0">
@@ -134,8 +140,8 @@ function Gallery() {
                 className="form-control"
                 id="videoName"
                 placeholder='Enter video name'
-                value={poster.name}
-                onChange={(e) => setPoster({ ...poster, name: e.target.value })}
+                value={video.name}
+                onChange={(e) => setVideo({ ...video, name: e.target.value })}
                 required />
             </div>
             <div className="mb-3">
@@ -146,8 +152,8 @@ function Gallery() {
                 id="embebedCode"
                 rows={5}
                 placeholder='Paste embeded code'
-                value={poster.embeded}
-                onChange={(e) => setPoster({ ...poster, embeded: e.target.value, url: extractSrcUrl(e.target.value) })}
+                value={video.embeded}
+                onChange={(e) => setVideo({ ...video, embeded: e.target.value, url: extractSrcUrl(e.target.value) })}
                 required />
             </div>
             <div className="mb-3">
@@ -157,12 +163,12 @@ function Gallery() {
                 className="form-control"
                 id="url"
                 placeholder='Video Url'
-                value={poster.url}
-                onChange={(e) => setPoster({ ...poster, url: e.target.value })}
+                value={video.url}
+                onChange={(e) => setVideo({ ...video, url: e.target.value })}
                 required />
             </div>
             <div className="d-flex justify-content-end">
-              <button type="submit" className="btn btn-primary">Add Menu</button>
+              <button type="submit" className="btn btn-primary">Add Video</button>
               <button type="button" className="btn btn-secondary mx-2" data-bs-dismiss="offcanvas">Cancel</button>
             </div>
           </form>

@@ -6,6 +6,7 @@ import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import db from '../firebaseConfig';
 
 import Loader from './Loader';
+import NoData from './NoData';
 
 var $ = require('jquery');
 
@@ -25,6 +26,12 @@ function Posters() {
   const saveData = async () => {
     setLoader(true)
 
+    if (!poster.image) {
+      alert("Please upload an image");
+      setLoader(false);
+      return;
+    }
+
     setPoster({
       name: poster.name,
       image: poster.image
@@ -35,6 +42,10 @@ function Posters() {
     await addDoc(collection(db, "posters"), poster).then(() => {
       loadPosters()
       $('#staticBackdropBtn').click();
+      setPoster({
+        name: "",
+        image: ""
+      })
       setLoader(false)
     })
   };
@@ -50,9 +61,17 @@ function Posters() {
   }
 
   const handleFileChange = async (e) => {
+    setLoader(true)
     const file = e.target.files[0];
-    const base64 = await convertToBase64(file);
-    setPoster({ ...poster, image: base64 });
+    if (file.size > 1024 * 1024) { // 1MB in bytes
+      alert("Image size should be less than 1MB");
+      setLoader(false);
+      return;
+    }
+    await convertToBase64(file).then((base64) => {
+      setPoster({ ...poster, image: base64 });
+      setLoader(false);
+    });
   }
 
   const convertToBase64 = (file) => {
@@ -91,6 +110,7 @@ function Posters() {
             </button>
           </div>
           <hr />
+          {items && items.length === 0 && <NoData />}
           <ul className='food-list-container p-0 m-0'>
             {items && items.map((item, index) => (
               <li key={index} className="list-group-item p-0">
@@ -125,12 +145,12 @@ function Posters() {
             saveData();
           }}>
             <div className="mb-3">
-              <label htmlFor="foodName" className="form-label">Poster Name</label>
+              <label htmlFor="posterName" className="form-label">Poster Name</label>
               <input
                 type="text"
                 className="form-control"
-                id="foodName"
-                placeholder='Enter food name'
+                id="posterName"
+                placeholder='Enter poster name'
                 value={poster.name}
                 onChange={(e) => setPoster({ ...poster, name: e.target.value })}
                 required />
@@ -140,14 +160,14 @@ function Posters() {
               <small className='text-muted mb-2'> (Image size should be less than 1MB. Only .png, .jpg, .jpeg allowed)</small>
               <input
                 type="file"
-                id="foodImage"
-                name="foodImage"
+                id="posterImage"
+                name="posterImage"
                 accept=".png, .jpg, .jpeg"
                 onChange={(e) => handleFileChange(e)}
               />
             </div>
             <div className="d-flex justify-content-end">
-              <button type="submit" className="btn btn-primary">Add Menu</button>
+              <button type="submit" className="btn btn-primary">Add Poster</button>
               <button type="button" className="btn btn-secondary mx-2" data-bs-dismiss="offcanvas">Cancel</button>
             </div>
           </form>

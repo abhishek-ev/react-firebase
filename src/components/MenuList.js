@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { getDocs, addDoc, deleteDoc, collection, doc, query, where } from 'firebase/firestore';
+import { getDocs, addDoc, updateDoc, deleteDoc, collection, doc, query, where } from 'firebase/firestore';
 import Loader from './Loader';
+import NoData from './NoData';
 
 import db from '../firebaseConfig';
 
@@ -10,6 +11,7 @@ var $ = require('jquery');
 
 function MenuList() {
   const [loader, setLoader] = useState(true);
+  const [modalMode, setModalMode] = useState("Add");
   const [categpryName, setCategoryName] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [categoryList, setCategoryList] = useState([]);
@@ -54,6 +56,7 @@ function MenuList() {
       name: categpryName
     }).then(() => {
       loadCategoryList().then(() => {
+        setCategoryName("");
         setLoader(false);
       });
     });
@@ -81,6 +84,12 @@ function MenuList() {
   const saveData = async () => {
     setLoader(true)
 
+    if (!foodItem.image) {
+      alert("Please upload an image");
+      setLoader(false);
+      return;
+    }
+
     setFoodItem({
       category: foodItem.category,
       name: foodItem.name,
@@ -90,12 +99,32 @@ function MenuList() {
 
     console.log("foodItem", foodItem)
 
-    await addDoc(collection(db, "menuItems"), foodItem).then(() => {
-      loadFoodItems()
-      $('#staticBackdropBtn').click();
+    if (modalMode === "Add") {
+      await addDoc(collection(db, "menuItems"), foodItem).then(() => {
+        loadFoodItems()
+        $('#staticBackdropBtn').click();
+        setFoodItem({
+          category: "",
+          name: "",
+          description: "",
+          image: ""
+        })
+        setLoader(false)
+      })
+    } else {
+      await updateDoc(doc(db, "menuItems", foodItem.id), foodItem).then(() => {
+        loadFoodItems()
+        $('#staticBackdropBtn').click();
+        setFoodItem({
+          category: "",
+          name: "",
+          description: "",
+          image: ""
+        })
+        setLoader(false)
+      })
+    }
 
-      setLoader(false)
-    })
   };
 
   const handleFileChange = async (e) => {
@@ -130,6 +159,7 @@ function MenuList() {
 
   const EditItem = async (name) => {
     console.log("id", name)
+    setModalMode("Update")
     setLoader(true)
     const q = query(collection(db, "menuItems"), where("__name__", "==", name));
     await getDocs(q).then((querySnapshot) => {
@@ -153,7 +183,7 @@ function MenuList() {
 
 
   return (
-    <div className='position-relative'>
+    <div className='position-relative pb-3'>
       {loader && <Loader />}
       <div className='col-lg-12  d-flex flex-wrap position-relative'>
         <div className="col-lg-3 col-12 bg-white shadow-sm p-3 h-max" style={{ position: "sticky", top: "0px" }}>
@@ -175,7 +205,7 @@ function MenuList() {
               </div>
             </form>
           </div>
-          <ul className="list-group">
+          <ul className="list-group overflow-auto" style={{ height: "25rem" }}>
             {categoryList && categoryList.map((category) => (
               <li key={category.id} className="list-group-item d-flex justify-content-between">
                 {category.name}
@@ -186,7 +216,7 @@ function MenuList() {
             ))}
           </ul>
         </div>
-        <div className="col-lg-9 col-12 bg-white shadow-sm p-3" style={{ zIndex: "1000" }}>
+        <div className="col-lg-9 col-12 d-flex flex-column bg-white shadow-sm p-3" style={{ zIndex: "1000" }}>
           <div className='d-flex flex justify-content-between align-items-center'>
             <div className='d-flex d-lg-flex align-items-center flex-column flex-lg-row'>
               <h4 className='w-100'>Food Items</h4>
@@ -211,6 +241,7 @@ function MenuList() {
             ))}
           </select>
           <hr />
+          {items && items.length === 0 && <NoData />}
           <ul className='food-list-container p-0 m-0'>
             {items && items.map((item, index) => (
               <li key={index} className="list-group-item p-0">
@@ -240,7 +271,7 @@ function MenuList() {
 
       <div className="offcanvas offcanvas-end" style={{ "--bs-offcanvas-width": "550px" }} data-bs-backdrop="static" tabIndex="-1" id="staticBackdrop" aria-labelledby="staticBackdropLabel">
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="staticBackdropLabel">Add Menu</h5>
+          <h5 className="offcanvas-title" id="staticBackdropLabel">{modalMode} Menu</h5>
           <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div className="offcanvas-body">
@@ -296,7 +327,7 @@ function MenuList() {
               />
             </div>
             <div className="d-flex justify-content-end">
-              <button type="submit" className="btn btn-primary">Add Menu</button>
+              <button type="submit" className="btn btn-primary">{modalMode} Menu</button>
               <button type="button" className="btn btn-secondary mx-2" data-bs-dismiss="offcanvas">Cancel</button>
             </div>
           </form>
