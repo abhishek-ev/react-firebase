@@ -4,12 +4,12 @@ import {
   collection,
   addDoc,
   getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
 } from "firebase/firestore";
 
+import Loader from './Loader';
+
 function Write() {
+  const [loader, setLoader] = useState(true);
   const [categpryName, setCategoryName] = useState("");
   const [categoryList, setCategoryList] = useState([]);
   const [foodItem, setFoodItem] = useState({
@@ -23,12 +23,12 @@ function Write() {
 
 
   useEffect(() => {
-    loadCategoryList();
-    loadFoodItems();
+    loadCategoryList()
+    loadFoodItems()
   }, []);
 
   const saveData = async () => {
-
+    setLoader(true)
 
     setFoodItem({
       category: foodItem.category,
@@ -39,7 +39,10 @@ function Write() {
 
     console.log("foodItem",foodItem)
 
-    await addDoc(collection(db, "menuItems"), foodItem).then(loadFoodItems)
+    await addDoc(collection(db, "menuItems"), foodItem).then(()=>{
+      loadFoodItems()
+      setLoader(false)
+    })
   };
 
   const handleFileChange = async (e) => {
@@ -49,10 +52,12 @@ function Write() {
   }
 
   const saveCategory = async () => {
+    setLoader(true)
     await addDoc(collection(db, "categories"), {
       name:categpryName 
     }).then(()=>{
       loadCategoryList()
+      setLoader(false)
     })
   };
 
@@ -77,10 +82,12 @@ function Write() {
     const foodItemList = querySnapshot.docs.map(doc => doc.data())
     console.log("foodItemList",foodItemList)
     setItems(foodItemList)
+    setLoader(false)
   }
 
   return (
     <>
+    {loader && <Loader/>}
     <form style={{border:"2px solid black",padding:"1rem"}}>
       <label htmlFor="category">Create Category</label>
       <input
