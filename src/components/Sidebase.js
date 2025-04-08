@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import {useNavigate,NavLink} from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faListDots,faImage,faPhotoFilm } from '@fortawesome/free-solid-svg-icons';
+import { faListDots, faImage, faVideo } from '@fortawesome/free-solid-svg-icons';
 
 
 function Sidebar() {
@@ -21,24 +21,24 @@ function Sidebar() {
 
   return (
     <div className='sidebar-container d-flex flex-column'>
-        <NavLink
-          to="menulist"
-          className='sidebar-icon p-3'
-        >
-          <FontAwesomeIcon icon={faListDots} fontSize={20} />
-        </NavLink>
-        <NavLink
-          to="posters"
-          className='sidebar-icon p-3'
-        >
-          <FontAwesomeIcon icon={faImage} fontSize={20} />
-        </NavLink>
-        <NavLink
-          to="gallery"
-          className='sidebar-icon p-3'
-        >
-          <FontAwesomeIcon icon={faPhotoFilm} fontSize={20} />
-        </NavLink>
+      <NavLink
+        to="menulist"
+        className='sidebar-icon p-3'
+      >
+        <FontAwesomeIcon icon={faListDots} fontSize={20} />
+      </NavLink>
+      <NavLink
+        to="posters"
+        className='sidebar-icon p-3'
+      >
+        <FontAwesomeIcon icon={faImage} fontSize={20} />
+      </NavLink>
+      <NavLink
+        to="gallery"
+        className='sidebar-icon p-3'
+      >
+        <FontAwesomeIcon icon={faVideo} fontSize={20} />
+      </NavLink>
     </div>
   )
 }
