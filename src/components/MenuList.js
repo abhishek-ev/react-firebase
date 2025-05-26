@@ -12,7 +12,10 @@ var $ = require('jquery');
 function MenuList() {
   const [loader, setLoader] = useState(true);
   const [modalMode, setModalMode] = useState("Add");
-  const [categpryName, setCategoryName] = useState("");
+  const [category, setCategory] = useState({
+    name: "",
+    image: ""
+  });
   const [filterCategory, setFilterCategory] = useState("");
   const [categoryList, setCategoryList] = useState([]);
   const [foodItem, setFoodItem] = useState({
@@ -40,23 +43,26 @@ function MenuList() {
   };
 
   const saveCategory = async () => {
-    if (!categpryName) {
+    if (!category.name) {
       alert("Please enter a category name");
       return;
     }
     setLoader(true)
-    const categoryExists = categoryList.some(category => category.name === categpryName);
+    const categoryExists = categoryList.some(item => item.name === category.name);
     if (categoryExists) {
       alert("Category name already exists");
       setLoader(false);
       return;
     }
 
-    await addDoc(collection(db, "categories"), {
-      name: categpryName
-    }).then(() => {
+    await addDoc(collection(db, "categories"), category).then(() => {
       loadCategoryList().then(() => {
-        setCategoryName("");
+        $('#addCategoryBtn').click();
+        setCategory({
+          name: "",
+          description: "",
+          image: ""
+        });
         setLoader(false);
       });
     });
@@ -102,7 +108,7 @@ function MenuList() {
     if (modalMode === "Add") {
       await addDoc(collection(db, "menuItems"), foodItem).then(() => {
         loadFoodItems()
-        $('#staticBackdropBtn').click();
+        $('#addMenuBtn').click();
         setFoodItem({
           category: "",
           name: "",
@@ -114,7 +120,7 @@ function MenuList() {
     } else {
       await updateDoc(doc(db, "menuItems", foodItem.id), foodItem).then(() => {
         loadFoodItems()
-        $('#staticBackdropBtn').click();
+        $('#addMenuBtn').click();
         setFoodItem({
           category: "",
           name: "",
@@ -127,10 +133,14 @@ function MenuList() {
 
   };
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = async (e, type) => {
     const file = e.target.files[0];
     const base64 = await convertToBase64(file);
-    setFoodItem({ ...foodItem, image: base64 });
+    if (type === "MENU") {
+      setFoodItem({ ...foodItem, image: base64 });
+    } else {
+      setCategory({ ...category, image: base64 });
+    }
   }
 
   const convertToBase64 = (file) => {
@@ -189,26 +199,30 @@ function MenuList() {
         <div className="col-lg-3 col-12 bg-white shadow-sm p-3 h-max" style={{ position: "sticky", top: "0px" }}>
           <div className='d-flex justify-content-between align-items-center'>
             <h4>Categories</h4>
+            <button
+              id='addCategoryBtn'
+              className="btn btn-sm btn-outline-primary h-max"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#addCategory"
+              aria-controls="addCategory">
+              <FontAwesomeIcon icon={faAdd} className="me-2" />
+              Add
+            </button>
           </div>
           <hr />
-          <div className="mt-3" id="collapseExample">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              saveCategory();
-            }}>
-              <div className="input-group mb-3">
-                <input type="text" className="form-control" id="categoryName" placeholder='Enter Category Name' value={categpryName} onChange={(e) => setCategoryName(e.target.value)} />
-                <button className="btn btn-sm btn-outline-primary" type="submit">
-                  <FontAwesomeIcon icon={faAdd} className="me-2" />
-                  Add
-                </button>
-              </div>
-            </form>
-          </div>
           <ul className="list-group overflow-auto" style={{ maxHeight: "25rem" }}>
             {categoryList && categoryList.map((category) => (
-              <li key={category.id} className="list-group-item d-flex justify-content-between">
-                {category.name}
+              <li key={category.id} className="list-group-item p-2 d-flex justify-content-between">
+                <div className="px-2 d-flex align-items-center h-100 w-100">
+                  <div className="card-img-left">
+                    <img src={category.image} alt={category.name} />
+                  </div>
+                  <div className="card-body w-100 ps-3">
+                    <h5 className="card-title">{category.name}</h5>
+                    <p className="card-text">{category.description}</p>
+                  </div>
+                </div>
+                {/* {category.name} */}
                 <button type="button" className="btn btn-sm text-danger" onClick={() => deleteCategory(category.id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
@@ -222,7 +236,7 @@ function MenuList() {
               <h4 className='w-100'>Food Items</h4>
             </div>
 
-            <button id="staticBackdropBtn" type="button" className="btn btn-sm btn-outline-primary h-max" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop" aria-controls="staticBackdrop">
+            <button id="addMenuBtn" type="button" className="btn btn-sm btn-outline-primary h-max" data-bs-toggle="offcanvas" data-bs-target="#addMenu" aria-controls="addMenu">
               <FontAwesomeIcon icon={faAdd} className="me-2" />
               Add
             </button>
@@ -251,7 +265,7 @@ function MenuList() {
                     <h5 className="card-title">{item.name}</h5>
                     <p className="card-text">{item.description}</p>
                     <div className="d-flex justify-content-end">
-                      <button type="button" className="btn btn-sm btn-outline-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop" aria-controls="staticBackdrop" onClick={() => EditItem(item.id)}>
+                      <button type="button" className="btn btn-sm btn-outline-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#addMenu" aria-controls="addMenu" onClick={() => EditItem(item.id)}>
                         <FontAwesomeIcon icon={faEdit} className="me-2" />
                         Edit
                       </button>
@@ -269,9 +283,9 @@ function MenuList() {
         </div>
       </div>
 
-      <div className="offcanvas offcanvas-end" style={{ "--bs-offcanvas-width": "550px" }} data-bs-backdrop="static" tabIndex="-1" id="staticBackdrop" aria-labelledby="staticBackdropLabel">
+      <div className="offcanvas offcanvas-end" style={{ "--bs-offcanvas-width": "550px" }} data-bs-backdrop="static" tabIndex="-1" id="addMenu" aria-labelledby="addMenuLabel">
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="staticBackdropLabel">{modalMode} Menu</h5>
+          <h5 className="offcanvas-title" id="addMenuLabel">{modalMode} Menu</h5>
           <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div className="offcanvas-body">
@@ -323,7 +337,7 @@ function MenuList() {
                 id="foodImage"
                 name="foodImage"
                 accept=".png, .jpg, .jpeg"
-                onChange={(e) => handleFileChange(e)}
+                onChange={(e) => handleFileChange(e, 'MENU')}
               />
             </div>
             <div className="d-flex justify-content-end">
@@ -334,6 +348,56 @@ function MenuList() {
         </div>
       </div>
 
+      <div className="offcanvas offcanvas-end" style={{ "--bs-offcanvas-width": "550px" }} data-bs-backdrop="static" tabIndex="-1" id="addCategory" aria-labelledby="addCategoryLabel">
+        <div className="offcanvas-header">
+          <h5 className="offcanvas-title" id="addCategoryLabel">Add Category</h5>
+          <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div className="offcanvas-body">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            saveCategory();
+          }}>
+            <div className="mb-3">
+              <label htmlFor="categoryName" className="form-label">Category Name</label>
+              <input
+                type="text"
+                className="form-control"
+                id="categoryName"
+                placeholder='Enter cateogry name'
+                value={category.name}
+                onChange={(e) => setCategory({ ...category, name: e.target.value })}
+                required />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="category_description" className="form-label">Description</label>
+              <textarea
+                className="form-control"
+                id="category_description"
+                rows="3"
+                placeholder='Enter description'
+                value={category.description}
+                onChange={(e) => setCategory({ ...category, description: e.target.value })}
+                required></textarea>
+            </div>
+            <div className="mb-3">
+              <label htmlFor="categoryImage" className="form-label">Image</label>
+              <small className='text-muted mb-2'> (Image size should be less than 1MB. Only .png, .jpg, .jpeg allowed)</small>
+              <input
+                type="file"
+                id="categoryImage"
+                name="categoryImage"
+                accept=".png, .jpg, .jpeg"
+                onChange={(e) => handleFileChange(e, 'CATEGORY')}
+              />
+            </div>
+            <div className="d-flex justify-content-end">
+              <button type="submit" className="btn btn-primary">Add Category</button>
+              <button type="button" className="btn btn-secondary mx-2" data-bs-dismiss="offcanvas">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
 
     </div >
   )
