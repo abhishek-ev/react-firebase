@@ -45,6 +45,13 @@ body {
   gap: 1rem;
 }
 
+.card-img-left img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 @media (max-width: 768px) {
   .food-list-container {
     grid-template-columns: repeat(1, 1fr);
