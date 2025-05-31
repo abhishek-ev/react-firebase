@@ -7,6 +7,7 @@ import Dashbord from "./components/Dashboard";
 import MenuList from "./components/MenuList";
 import Posters from "./components/Posters";
 import Gallery from "./components/Gallery";
+import Offers from "./components/Offers";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="menulist" element={<MenuList />} />
             <Route path="posters" element={<Posters />} />
             <Route path="gallery" element={<Gallery />} />
+            <Route path="offers" element={<Offers />} />
           </Route>
           <Route path="/write" element={<Write />} />
         </Routes>
