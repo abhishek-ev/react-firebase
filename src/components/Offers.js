@@ -2,7 +2,7 @@ import  { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import db from '../firebaseConfig';
+import { db } from '../firebaseConfig';
 import Loader from './Loader';
 import NoData from './NoData';
 

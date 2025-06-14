@@ -4,8 +4,7 @@ import { faAdd, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { getDocs, addDoc, updateDoc, deleteDoc, collection, doc, query, where } from 'firebase/firestore';
 import Loader from './Loader';
 import NoData from './NoData';
-
-import db from '../firebaseConfig';
+import {db} from '../firebaseConfig';
 
 var $ = require('jquery');
 
